@@ -7,58 +7,58 @@
 
 /* ── CSS Custom Properties ── */
 :root {
-  /* Background layers */
-  --bg-primary: #0a0e17;
-  --bg-secondary: #111827;
-  --bg-tertiary: #1a2236;
-  --bg-card: #151d2e;
-  --bg-card-hover: #1c2740;
-  --bg-elevated: #1e293b;
+  /* Background layers (Darker, sleeker) */
+  --bg-primary: #050505;
+  --bg-secondary: #0a0a0a;
+  --bg-tertiary: #121212;
+  --bg-card: #0f0f0f;
+  --bg-card-hover: #161616;
+  --bg-elevated: #1a1a1a;
 
-  /* Accent palette */
-  --accent: #6366f1;
-  --accent-hover: #818cf8;
-  --accent-soft: rgba(99, 102, 241, 0.15);
-  --accent-glow: rgba(99, 102, 241, 0.3);
+  /* Accent palette (More neon/vibrant) */
+  --accent: #00e5ff;
+  --accent-hover: #00ffff;
+  --accent-soft: rgba(0, 229, 255, 0.12);
+  --accent-glow: rgba(0, 229, 255, 0.4);
 
   /* Status colors */
-  --green: #22c55e;
-  --green-soft: rgba(34, 197, 94, 0.15);
-  --yellow: #eab308;
-  --yellow-soft: rgba(234, 179, 8, 0.15);
-  --red: #ef4444;
-  --red-soft: rgba(239, 68, 68, 0.15);
-  --blue: #3b82f6;
-  --blue-soft: rgba(59, 130, 246, 0.15);
-  --orange: #f97316;
-  --orange-soft: rgba(249, 115, 22, 0.15);
-  --purple: #a855f7;
-  --purple-soft: rgba(168, 85, 247, 0.15);
-  --cyan: #06b6d4;
-  --cyan-soft: rgba(6, 182, 212, 0.15);
+  --green: #00e676;
+  --green-soft: rgba(0, 230, 118, 0.12);
+  --yellow: #ffea00;
+  --yellow-soft: rgba(255, 234, 0, 0.12);
+  --red: #ff1744;
+  --red-soft: rgba(255, 23, 68, 0.12);
+  --blue: #2979ff;
+  --blue-soft: rgba(41, 121, 255, 0.12);
+  --orange: #ff9100;
+  --orange-soft: rgba(255, 145, 0, 0.12);
+  --purple: #d500f9;
+  --purple-soft: rgba(213, 0, 249, 0.12);
+  --cyan: #00e5ff;
+  --cyan-soft: rgba(0, 229, 255, 0.12);
 
   /* Text */
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
-  --text-muted: #475569;
+  --text-primary: #ffffff;
+  --text-secondary: #a0aab2;
+  --text-tertiary: #707b85;
+  --text-muted: #4a545e;
 
   /* Borders */
-  --border: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(255, 255, 255, 0.12);
-  --border-accent: rgba(99, 102, 241, 0.3);
+  --border: rgba(255, 255, 255, 0.05);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-accent: rgba(0, 229, 255, 0.4);
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.8);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.9);
+  --shadow-glow: 0 0 25px rgba(0, 229, 255, 0.25);
 
   /* Radii */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
   --radius-full: 9999px;
 
   /* Typography */
@@ -67,12 +67,13 @@
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* Smoother */
+  --transition-slow: 500ms cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Layout */
-  --sidebar-width: 260px;
-  --header-height: 64px;
+  --sidebar-width: 270px;
+  --header-height: 72px;
 }
 
 /* ── Reset ── */
@@ -137,7 +138,10 @@ a:hover {
 /* ── Sidebar ── */
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--bg-secondary);
+  background: rgba(10, 10, 10, 0.75);
+  /* Glass effect */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -150,31 +154,32 @@ a:hover {
 }
 
 .sidebar-brand {
-  padding: 20px 22px;
+  padding: 24px 22px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   border-bottom: 1px solid var(--border);
 }
 
 .sidebar-brand .logo-icon {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, var(--accent), var(--purple));
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #fff;
-  font-weight: 800;
-  box-shadow: var(--shadow-glow);
+  /* The logo image itself is inserted via HTML */
+  box-shadow: 0 0 15px var(--accent-glow);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.sidebar-brand:hover .logo-icon {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px var(--accent-glow);
 }
 
 .sidebar-brand h1 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--text-primary), var(--accent-hover));
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #ffffff 30%, var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -268,20 +273,48 @@ a:hover {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 22px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
   transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: radial-gradient(800px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(255, 255, 255, 0.03), transparent 40%);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.card:hover::before {
+  opacity: 1;
 }
 
 .card:hover {
+  transform: translateY(-4px);
   border-color: var(--border-hover);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.card-header,
+.card-body {
+  position: relative;
+  z-index: 1;
 }
 
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .card-title {
@@ -1442,6 +1475,7 @@ canvas {
   color: var(--text-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
