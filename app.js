@@ -1256,37 +1256,44 @@ async function syncLeetCode(isQuick = false) {
 
     // Determine the correct Vercel API endpoint based on environment
     let apiUrl = '/api/leetcode';
-    const isLocalOrGH = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname.includes('github.io');
-
-    if (isLocalOrGH) {
-      // If running locally or on GitHub Pages, use the absolute Vercel deployment URL
-      apiUrl = 'https://code-tracker-api-proxy.vercel.app/api/leetcode';
-    }
 
     // Method 1: Our Vercel API proxy (Fetches detailed GraphQL including recentAcSubmissionList)
     try {
-      const r1 = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username })
-      });
-      if (r1.ok) {
-        const j = await r1.json();
-        if (j.data) data = j; // Extract the GraphQL data root
+      if (window.location.protocol !== 'file:' && window.location.hostname !== 'localhost' && !window.location.hostname.includes('github.io')) {
+        const r1 = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        if (r1.ok) {
+          const j = await r1.json();
+          if (j.data) data = j; // Extract the GraphQL data root
+        }
       }
     } catch (e) {
       console.log('Method 1 (Vercel API proxy) failed:', e);
     }
 
-    // Method 2: Fallback to Public LeetCode stats API (NOTE: does NOT include recent submissions)
+    // Method 2: Fallback to highly reliable Faisalshohag API (Includes recent submissions)
     if (!data) {
       try {
-        const r2 = await fetch(`https://alfa-leetcode-api.onrender.com/userProfile/${username}`);
+        const r2 = await fetch(`https://leetcode-api-faisalshohag.vercel.app/${username}`);
         if (r2.ok) {
           const j = await r2.json();
+          if (j && j.totalSolved !== undefined) data = j;
+        }
+      } catch (e) { console.log('Method 2 (Faisal API) failed:', e); }
+    }
+
+    // Method 3: Fallback 2 to Public LeetCode stats API (NOTE: does NOT include recent submissions)
+    if (!data) {
+      try {
+        const r3 = await fetch(`https://alfa-leetcode-api.onrender.com/userProfile/${username}`);
+        if (r3.ok) {
+          const j = await r3.json();
           if (j && (j.totalSolved !== undefined || j.matchedUser)) data = j;
         }
-      } catch (e) { console.log('Method 2 (alfa api) failed:', e); }
+      } catch (e) { console.log('Method 3 (alfa api) failed:', e); }
     }
 
     if (!data) throw new Error('All sync methods failed');
@@ -1305,8 +1312,13 @@ async function syncLeetCode(isQuick = false) {
       });
       recentAcs = data.data.recentAcSubmissionList || [];
     } else if (data?.totalSolved !== undefined) {
-      // alfa-leetcode-api format
+      // Faisal or alfa-leetcode-api format
       stats = { all: data.totalSolved, easy: data.easySolved, medium: data.mediumSolved, hard: data.hardSolved };
+      if (data.recentSubmissions && Array.isArray(data.recentSubmissions)) {
+        recentAcs = data.recentSubmissions
+          .filter(s => s.statusDisplay === 'Accepted')
+          .map(s => ({ title: s.title, titleSlug: s.titleSlug }));
+      }
     } else {
       if (statusEl) statusEl.textContent = '❌ User not found';
       if (isQuick && dashBtn) { dashBtn.textContent = '❌ Failed'; dashBtn.disabled = false; }
