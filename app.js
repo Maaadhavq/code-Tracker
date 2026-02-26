@@ -1298,7 +1298,7 @@ async function syncLeetCode() {
 
     showToast(`🔗 Synced with ${displayName}'s LeetCode profile`);
   } catch (err) {
-    statusEl.textContent = '❌ Sync failed — try again later';
+    statusEl.textContent = '❌ Sync failed: ' + (err.message || 'Unknown error');
     console.error('LeetCode sync error:', err);
   }
 }

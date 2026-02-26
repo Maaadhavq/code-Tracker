@@ -1,14 +1,12 @@
-const CACHE_NAME = 'codetrack-v3';
+const CACHE_NAME = 'codetrack-v5';
 const ASSETS = [
     './',
     './index.html',
     './index.css',
-    './sheets.js',
-    './app.js',
     './manifest.json'
 ];
 
-// Install — cache assets
+// Install — cache assets (but NOT JS files — we always want fresh JS)
 self.addEventListener('install', (e) => {
     e.waitUntil(
         caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
@@ -16,7 +14,7 @@ self.addEventListener('install', (e) => {
     self.skipWaiting();
 });
 
-// Activate — clean old caches
+// Activate — delete ALL old caches immediately
 self.addEventListener('activate', (e) => {
     e.waitUntil(
         caches.keys().then(keys =>
@@ -26,8 +24,19 @@ self.addEventListener('activate', (e) => {
     self.clients.claim();
 });
 
-// Fetch — cache-first, then network
+// Fetch — network-first for JS/API, cache-first for CSS/HTML
 self.addEventListener('fetch', (e) => {
+    const url = e.request.url;
+
+    // Always go to network for JS files and API calls
+    if (url.endsWith('.js') || url.includes('/api/')) {
+        e.respondWith(
+            fetch(e.request).catch(() => caches.match(e.request))
+        );
+        return;
+    }
+
+    // Cache-first for everything else
     e.respondWith(
         caches.match(e.request).then(cached => cached || fetch(e.request))
     );
