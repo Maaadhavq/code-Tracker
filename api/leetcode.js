@@ -26,6 +26,10 @@ module.exports = async function handler(req, res) {
         acSubmissionNum { difficulty count }
       }
     }
+    recentAcSubmissionList(username: "${username.replace(/[^a-zA-Z0-9_-]/g, '')}", limit: 50) {
+      title
+      titleSlug
+    }
   }`;
 
     try {

@@ -1221,26 +1221,40 @@ function generateRoadmap() {
 }
 
 // ─── LeetCode Profile Sync ───
-async function syncLeetCode() {
-  const username = document.getElementById('settingsLCUser').value.trim();
-  if (!username) { showToast('Enter a LeetCode username first', 'error'); return; }
+async function syncLeetCode(isQuick = false) {
+  const username = APP.settings.lcUsername || document.getElementById('settingsLCUser')?.value?.trim();
+  if (!username) {
+    if (!isQuick) showToast('Enter a LeetCode username first in Settings', 'error');
+    return;
+  }
 
   const statusEl = document.getElementById('lcSyncStatus');
   const resultEl = document.getElementById('lcSyncResult');
-  statusEl.textContent = '⏳ Syncing...';
-  resultEl.innerHTML = '';
+  const dashBtn = document.getElementById('dashboardSyncBtn');
+
+  if (statusEl) statusEl.textContent = '⏳ Syncing...';
+  if (resultEl) resultEl.innerHTML = '';
+  if (isQuick && dashBtn) {
+    const origText = dashBtn.textContent;
+    dashBtn.textContent = '⏳ Syncing...';
+    dashBtn.disabled = true;
+  }
 
   const query = `{
     matchedUser(username: "${username}") {
       username
       submitStatsGlobal { acSubmissionNum { difficulty count } }
     }
+    recentAcSubmissionList(username: "${username}", limit: 50) {
+      title
+      titleSlug
+    }
   }`;
 
   try {
     let data = null;
 
-    // Method 1: Public LeetCode stats API (no CORS issues)
+    // Method 1: Public LeetCode stats API (no CORS issues) - Note: doesn't have recentAcSubmissionList by default in standard endpoint
     try {
       const r1 = await fetch(`https://alfa-leetcode-api.onrender.com/userProfile/${username}`);
       if (r1.ok) {
@@ -1250,14 +1264,17 @@ async function syncLeetCode() {
     } catch (e) { console.log('Method 1 failed:', e); }
 
     // Method 2: Our Vercel API proxy
-    if (!data) {
+    if (!data || !data.data?.recentAcSubmissionList) {
       try {
         const r2 = await fetch('/api/leetcode', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username })
         });
-        if (r2.ok) data = await r2.json();
+        if (r2.ok) {
+          const j = await r2.json();
+          if (j.data) data = j; // Prefer GraphQL response for recent ACs
+        }
       } catch (e) { console.log('Method 2 failed:', e); }
     }
 
@@ -1266,6 +1283,7 @@ async function syncLeetCode() {
     // Handle both response formats
     let stats = {};
     let displayName = username;
+    let recentAcs = [];
 
     if (data?.data?.matchedUser) {
       // GraphQL format (our API proxy)
@@ -1274,21 +1292,57 @@ async function syncLeetCode() {
       (user.submitStatsGlobal?.acSubmissionNum || []).forEach(s => {
         stats[s.difficulty.toLowerCase()] = s.count;
       });
+      recentAcs = data.data.recentAcSubmissionList || [];
     } else if (data?.totalSolved !== undefined) {
       // alfa-leetcode-api format
       stats = { all: data.totalSolved, easy: data.easySolved, medium: data.mediumSolved, hard: data.hardSolved };
     } else {
-      statusEl.textContent = '❌ User not found';
+      if (statusEl) statusEl.textContent = '❌ User not found';
+      if (isQuick && dashBtn) { dashBtn.textContent = '❌ Failed'; dashBtn.disabled = false; }
       return;
     }
 
     APP.settings.lcUsername = username;
     APP.settings.lcStats = stats;
     APP.settings.lcSyncedAt = new Date().toISOString();
+
+    // Auto-mark recent problems as solved
+    let newlySolvedCount = 0;
+    const today = new Date().toISOString().slice(0, 10);
+
+    recentAcs.forEach(ac => {
+      // Try to find by exact title match (case insensitive)
+      const acTitleLower = ac.title.toLowerCase();
+      const localProb = APP.problems.find(p => p.title.toLowerCase() === acTitleLower);
+
+      if (localProb && localProb.status !== 'solved' && localProb.status !== 'revisited') {
+        localProb.status = 'solved';
+        if (!localProb.attempts) localProb.attempts = [];
+
+        // Add a dummy attempt if none exists for today
+        if (!localProb.attempts.some(a => a.date.startsWith(today))) {
+          localProb.attempts.push({
+            id: uuid(),
+            date: new Date().toISOString(),
+            duration: 15, // default
+            solved: true,
+            language: 'Auto-Synced',
+            notes: 'Auto-synced from LeetCode'
+          });
+          // Update activity log for streak
+          APP.activityLog[today] = (APP.activityLog[today] || 0) + 1;
+        }
+
+        localProb.updatedAt = new Date().toISOString();
+        newlySolvedCount++;
+      }
+    });
+
     saveData(APP);
 
-    statusEl.textContent = `✅ Synced as ${displayName}`;
-    resultEl.innerHTML = `
+    // Update UI
+    if (statusEl) statusEl.textContent = `✅ Synced as ${displayName}`;
+    if (resultEl) resultEl.innerHTML = `
       <div class="lc-stats">
         <div class="lc-stat-item"><div class="lc-val" style="color:var(--green)">${stats.easy || 0}</div><div class="lc-label">Easy</div></div>
         <div class="lc-stat-item"><div class="lc-val" style="color:var(--yellow)">${stats.medium || 0}</div><div class="lc-label">Medium</div></div>
@@ -1296,10 +1350,24 @@ async function syncLeetCode() {
       </div>
       <p style="font-size:0.72rem; color:var(--text-tertiary); margin-top:8px">Total: ${(stats.all || 0)} solved  •  Last synced: ${new Date().toLocaleString()}</p>`;
 
-    showToast(`🔗 Synced with ${displayName}'s LeetCode profile`);
+    if (isQuick && dashBtn) {
+      dashBtn.textContent = '🔄 Quick Sync';
+      dashBtn.disabled = false;
+    }
+
+    let msg = `🔗 Synced with ${displayName}'s LeetCode profile.`;
+    if (newlySolvedCount > 0) msg += ` Marked ${newlySolvedCount} problem(s) as solved!`;
+    showToast(msg);
+
+    // Refresh lists if needed
+    if (currentPage === 'dashboard') renderDashboard();
+    if (currentPage === 'problems') renderProblemList();
+
   } catch (err) {
-    statusEl.textContent = '❌ Sync failed: ' + (err.message || 'Unknown error');
+    if (statusEl) statusEl.textContent = '❌ Sync failed: ' + (err.message || 'Unknown error');
+    if (isQuick && dashBtn) { dashBtn.textContent = '🔄 Quick Sync'; dashBtn.disabled = false; }
     console.error('LeetCode sync error:', err);
+    if (!isQuick) showToast('Sync failed: ' + err.message, 'error');
   }
 }
 
@@ -1579,6 +1647,15 @@ const originalRenderDashboard = renderDashboard;
 renderDashboard = function () {
   originalRenderDashboard();
   renderDashboardSheets();
+
+  const syncBtn = document.getElementById('dashboardSyncBtn');
+  if (syncBtn) {
+    if (APP.settings.lcUsername) {
+      syncBtn.style.display = 'inline-block';
+    } else {
+      syncBtn.style.display = 'none';
+    }
+  }
 };
 
 // ─── Canvas resize ───
