@@ -1254,9 +1254,18 @@ async function syncLeetCode(isQuick = false) {
   try {
     let data = null;
 
+    // Determine the correct Vercel API endpoint based on environment
+    let apiUrl = '/api/leetcode';
+    const isLocalOrGH = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname.includes('github.io');
+
+    if (isLocalOrGH) {
+      // If running locally or on GitHub Pages, use the absolute Vercel deployment URL
+      apiUrl = 'https://code-tracker-api-proxy.vercel.app/api/leetcode';
+    }
+
     // Method 1: Our Vercel API proxy (Fetches detailed GraphQL including recentAcSubmissionList)
     try {
-      const r1 = await fetch('/api/leetcode', {
+      const r1 = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username })
