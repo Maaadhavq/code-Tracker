@@ -1238,22 +1238,30 @@ async function syncLeetCode() {
   }`;
 
   try {
-    // Try our own API proxy first (Vercel serverless), then fallback to public API
-    let resp;
+    let data = null;
+
+    // Method 1: Public LeetCode stats API (no CORS issues)
     try {
-      resp = await fetch('/api/leetcode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username })
-      });
-    } catch (e) {
-      // Fallback: try alfa-leetcode-api (public, no CORS issues)
-      resp = await fetch(`https://alfa-leetcode-api.onrender.com/${username}`);
+      const r1 = await fetch(`https://alfa-leetcode-api.onrender.com/userProfile/${username}`);
+      if (r1.ok) {
+        const j = await r1.json();
+        if (j && (j.totalSolved !== undefined || j.matchedUser)) data = j;
+      }
+    } catch (e) { console.log('Method 1 failed:', e); }
+
+    // Method 2: Our Vercel API proxy
+    if (!data) {
+      try {
+        const r2 = await fetch('/api/leetcode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        if (r2.ok) data = await r2.json();
+      } catch (e) { console.log('Method 2 failed:', e); }
     }
 
-
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
+    if (!data) throw new Error('All sync methods failed');
 
     // Handle both response formats
     let stats = {};
