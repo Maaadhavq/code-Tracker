@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeTrack — LeetCode Tracker & Interview Prep</title>
+  <meta name="description"
+    content="Track your LeetCode progress, get AI-powered suggestions, and prepare for coding interviews systematically.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="app-layout">
+    <!-- ─── Sidebar ─── -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo-icon">CT</div>
+        <h1>CodeTrack</h1>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-page="dashboard" id="nav-dashboard">
+          <span class="nav-icon">🏠</span> Dashboard
+        </button>
+        <button class="nav-item" data-page="problems" id="nav-problems">
+          <span class="nav-icon">📚</span> Problems
+        </button>
+        <button class="nav-item" data-page="analytics" id="nav-analytics">
+          <span class="nav-icon">📈</span> Analytics
+        </button>
+
+        <div class="nav-section-label">Preparation</div>
+        <button class="nav-item" data-page="interview" id="nav-interview">
+          <span class="nav-icon">🎯</span> Interview Prep
+        </button>
+        <button class="nav-item" data-page="reminders" id="nav-reminders">
+          <span class="nav-icon">🔔</span> Reminders
+        </button>
+        <button class="nav-item" data-page="notes" id="nav-notes">
+          <span class="nav-icon">📝</span> Notes
+        </button>
+
+        <div class="nav-section-label">Account</div>
+        <button class="nav-item" data-page="settings" id="nav-settings">
+          <span class="nav-icon">⚙️</span> Settings
+        </button>
+      </nav>
+    </aside>
+
+    <!-- ─── Main Content ─── -->
+    <main class="main-content">
+
+      <!-- ═══════════ DASHBOARD ═══════════ -->
+      <section class="page" id="page-dashboard">
+        <div class="page-header">
+          <button class="mobile-menu-btn" id="menuBtn">☰</button>
+          <div>
+            <h2>Dashboard</h2>
+            <p>Welcome back! Keep up the momentum 🚀</p>
+          </div>
+        </div>
+        <div class="page-body">
+          <!-- Streak Banner -->
+          <div class="streak-banner">
+            <div class="streak-info">
+              <span class="streak-fire">🔥</span>
+              <div class="streak-text">
+                <h3 id="streakCount">0-day streak</h3>
+                <p>Longest: <span id="longestStreak">0</span> days</p>
+              </div>
+            </div>
+            <div class="streak-goal">
+              <div class="goal-progress"><span id="todayCount">0</span>/<span id="dailyGoal">3</span></div>
+              <div class="goal-label">Today's Goal</div>
+            </div>
+          </div>
+
+          <!-- Stat Cards -->
+          <div class="stats-grid">
+            <div class="stat-card accent">
+              <div class="stat-icon">📊</div>
+              <div class="stat-value" id="totalSolved">0</div>
+              <div class="stat-label">Total Solved</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-icon">🟢</div>
+              <div class="stat-value" id="easySolved">0</div>
+              <div class="stat-label">Easy</div>
+            </div>
+            <div class="stat-card yellow">
+              <div class="stat-icon">🟡</div>
+              <div class="stat-value" id="mediumSolved">0</div>
+              <div class="stat-label">Medium</div>
+            </div>
+            <div class="stat-card red">
+              <div class="stat-icon">🔴</div>
+              <div class="stat-value" id="hardSolved">0</div>
+              <div class="stat-label">Hard</div>
+            </div>
+            <div class="stat-card blue">
+              <div class="stat-icon">🎯</div>
+              <div class="stat-value" id="readinessScore">0%</div>
+              <div class="stat-label">Interview Ready</div>
+            </div>
+          </div>
+
+          <!-- Heatmap -->
+          <div class="card heatmap-container">
+            <div class="card-header">
+              <span class="card-title">📅 Activity Heatmap</span>
+              <span class="card-subtitle" id="heatmapYear">2026</span>
+            </div>
+            <div class="heatmap-grid" id="heatmapGrid"></div>
+            <div class="heatmap-legend">
+              <span>Less</span>
+              <div class="heatmap-cell level-0"></div>
+              <div class="heatmap-cell level-1"></div>
+              <div class="heatmap-cell level-2"></div>
+              <div class="heatmap-cell level-3"></div>
+              <div class="heatmap-cell level-4"></div>
+              <span>More</span>
+            </div>
+          </div>
+
+          <!-- Active Sheet Progress -->
+          <div id="dashboardSheets" style="margin-bottom:24px"></div>
+
+          <!-- Suggestions -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🧠 Suggested Next</span>
+              <button class="btn btn-sm btn-secondary" onclick="refreshSuggestions()">Refresh</button>
+            </div>
+            <div class="suggestion-list" id="suggestionList">
+              <div class="empty-state">
+                <div class="empty-icon">🎯</div>
+                <h3>Add problems to get suggestions</h3>
+                <p>We'll recommend problems based on your weak topics.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════ PROBLEMS ═══════════ -->
+      <section class="page" id="page-problems" style="display:none">
+        <div class="page-header">
+          <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+          <div style="flex:1">
+            <h2>Problems</h2>
+            <p>Track your LeetCode problem solving journey</p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddProblem()">+ Add Problem</button>
+        </div>
+        <div class="page-body">
+          <!-- Search & Filter -->
+          <div class="search-filter-bar">
+            <div class="search-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="problemSearch" placeholder="Search problems...">
+            </div>
+            <button class="filter-btn" data-filter="all" onclick="setStatusFilter('all')">All</button>
+            <button class="filter-btn" data-filter="solved" onclick="setStatusFilter('solved')">✅ Solved</button>
+            <button class="filter-btn" data-filter="attempted" onclick="setStatusFilter('attempted')">🔄
+              Attempted</button>
+            <button class="filter-btn" data-filter="not_started" onclick="setStatusFilter('not_started')">⬜ New</button>
+          </div>
+
+          <!-- Difficulty Filter Chips -->
+          <div class="filter-chips">
+            <span class="filter-chip active" data-diff="all" onclick="setDiffFilter('all')">All Difficulties</span>
+            <span class="filter-chip" data-diff="easy" onclick="setDiffFilter('easy')">🟢 Easy</span>
+            <span class="filter-chip" data-diff="medium" onclick="setDiffFilter('medium')">🟡 Medium</span>
+            <span class="filter-chip" data-diff="hard" onclick="setDiffFilter('hard')">🔴 Hard</span>
+          </div>
+
+          <!-- Problem List -->
+          <div class="problem-list" id="problemList">
+            <div class="empty-state">
+              <div class="empty-icon">📚</div>
+              <h3>No problems yet</h3>
+              <p>Start by adding your first LeetCode problem.</p>
+              <button class="btn btn-primary" onclick="openAddProblem()">+ Add Problem</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════ ANALYTICS ═══════════ -->
+      <section class="page" id="page-analytics" style="display:none">
+        <div class="page-header">
+          <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+          <div>
+            <h2>Analytics</h2>
+            <p>Track your progress and identify areas for improvement</p>
+          </div>
+        </div>
+        <div class="page-body">
+          <div class="analytics-grid">
+            <!-- Difficulty Distribution -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Difficulty Distribution</span>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="diffChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Solve Trend -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Daily Trend (30 days)</span>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="trendChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Topic Strength -->
+            <div class="card" style="grid-column: 1 / -1">
+              <div class="card-header">
+                <span class="card-title">Topic Strength</span>
+              </div>
+              <div class="topic-bars" id="topicBars"></div>
+            </div>
+
+            <!-- Readiness Gauge -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Interview Readiness</span>
+              </div>
+              <div class="readiness-gauge" id="readinessGauge"></div>
+            </div>
+
+            <!-- Status Distribution -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Status Breakdown</span>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="statusChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════ INTERVIEW PREP ═══════════ -->
+      <section class="page" id="page-interview" style="display:none">
+        <div class="page-header">
+          <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+          <div>
+            <h2>Interview Prep</h2>
+            <p>Import a full sheet with one click — track progress sheet-wise</p>
+          </div>
+        </div>
+        <div class="page-body">
+          <div class="prep-grid" id="sheetGrid"></div>
+
+          <!-- Mock Interview Timer (hidden by default) -->
+          <div class="card" id="mockInterviewPanel" style="display:none; margin-top:24px">
+            <div class="card-header">
+              <span class="card-title">⏱️ Mock Interview In Progress</span>
+              <button class="btn btn-sm btn-danger" onclick="endMockInterview()">End Session</button>
+            </div>
+            <div style="text-align:center; padding:20px">
+              <div id="mockTimer"
+                style="font-size:3rem; font-weight:800; font-family:var(--font-mono); color:var(--accent-hover)">45:00
+              </div>
+              <p style="color:var(--text-secondary); margin: 8px 0 20px">Solve as many as you can!</p>
+            </div>
+            <div class="problem-list" id="mockProblemList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════ SHEET DETAIL ═══════════ -->
+      <section class="page" id="page-sheetdetail" style="display:none">
+        <div class="page-header">
+          <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+          <div style="flex:1">
+            <h2 id="sheetDetailTitle">Sheet</h2>
+            <p id="sheetDetailSub"></p>
+          </div>
+          <button class="btn btn-primary" id="sheetImportBtn" onclick="importCurrentSheet()">📥 Import All</button>
+        </div>
+        <div class="page-body">
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+              <span class="card-title">Progress</span>
+              <span class="card-subtitle" id="sheetProgressText">0 / 0</span>
+            </div>
+            <div class="sheet-progress-bar">
+              <div class="sheet-progress-fill" id="sheetProgressFill"></div>
+            </div>
+          </div>
+          <div class="problem-list" id="sheetProblemList"></div>
+        </div>
+      </section>
+
+      <!-- ═══════════ REMINDERS ═══════════ -->
+      <section class="page" id="page-reminders" style="display:none">
+        <div class="page-header">
+          <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+          <div style="flex:1">
+            <h2>Reminders</h2>
+            <p>Stay consistent with smart notifications</p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddReminder()">+ New Reminder</button>
+        </div>
+        <div class="page-body">
+          <div class="reminder-list" id="reminderList"></div>
+        </div>
+      </section>
+
+      <!-- ═══════════ NOTES ═══════════ -->
+      <section class="page" id="page-notes" style="display:none">
+        <div class="page-header">
+          <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+          <div style="flex:1">
+            <h2>Notes & Knowledge Base</h2>
+            <p>Your personal DSA cheat sheets and learnings</p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddNote()">+ New Note</button>
+        </div>
+        <div class="page-body">
+          <div class="search-filter-bar" style="margin-bottom:20px">
+            <div class="search-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="noteSearch" placeholder="Search notes...">
+            </div>
+          </div>
+          <div class="notes-grid" id="notesGrid"></div>
+        </div>
+      </section>
+
+      <!-- ═══════════ SETTINGS ═══════════ -->
+      <section class="page" id="page-settings" style="display:none">
+        <div class="page-header">
+          <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+          <div>
+            <h2>Settings</h2>
+            <p>Configure your CodeTrack experience</p>
+          </div>
+        </div>
+        <div class="page-body" style="max-width:600px">
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-title" style="margin-bottom:16px">👤 Profile</div>
+            <div class="form-group">
+              <label>Display Name</label>
+              <input type="text" id="settingsName" placeholder="Your name">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="settingsEmail" placeholder="you@example.com">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Profile</button>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-title" style="margin-bottom:16px">🔗 LeetCode Sync</div>
+            <div class="form-group">
+              <label>LeetCode Username</label>
+              <input type="text" id="settingsLCUser" placeholder="e.g. leetcoder123">
+            </div>
+            <div style="display:flex; gap:10px; align-items:center">
+              <button class="btn btn-primary btn-sm" onclick="syncLeetCode()">🔄 Sync Profile</button>
+              <span id="lcSyncStatus" style="font-size:0.82rem; color:var(--text-secondary)"></span>
+            </div>
+            <div id="lcSyncResult" style="margin-top:12px"></div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-title" style="margin-bottom:16px">🎯 Goals</div>
+            <div class="form-group">
+              <label>Daily Problem Goal</label>
+              <input type="number" id="settingsGoal" min="1" max="20" value="3">
+            </div>
+            <div class="form-group">
+              <label>Interview Date (optional)</label>
+              <input type="date" id="settingsInterviewDate">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Goals</button>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-title" style="margin-bottom:16px">🔔 Notifications</div>
+            <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:12px">Enable browser notifications
+              for daily reminders and revision alerts.</p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px">
+              <button class="btn btn-primary btn-sm" id="notifBtn" onclick="enableNotifications()">🔔 Enable
+                Notifications</button>
+              <button class="btn btn-secondary btn-sm" onclick="testNotifNow()">📤 Send Test Now</button>
+            </div>
+            <div id="notifDebug"
+              style="font-size:0.78rem; color:var(--text-tertiary); background:var(--bg-tertiary); padding:12px; border-radius:var(--radius-md); font-family:var(--font-mono); line-height:1.8">
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-title" style="margin-bottom:16px">📦 Data</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm" onclick="exportData()">📤 Export JSON</button>
+              <button class="btn btn-secondary btn-sm" onclick="document.getElementById('importFile').click()">📥 Import
+                JSON</button>
+              <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+              <button class="btn btn-danger btn-sm" onclick="clearAllData()">🗑️ Clear All Data</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════ PROBLEM DETAIL ═══════════ -->
+      <section class="page" id="page-detail" style="display:none">
+        <div class="page-header">
+          <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+          <div>
+            <h2 id="detailTitle">Problem Detail</h2>
+            <p id="detailSub"></p>
+          </div>
+        </div>
+        <div class="page-body problem-detail">
+          <div class="detail-header">
+            <button class="back-btn" onclick="navigateTo('problems')">← Back to Problems</button>
+            <div class="detail-title">
+              <span id="detailProbId"></span>
+              <span id="detailProbName"></span>
+            </div>
+            <div class="detail-meta" id="detailMeta"></div>
+          </div>
+
+          <div class="detail-stats-grid" id="detailStats"></div>
+
+          <!-- Actions -->
+          <div style="display:flex; gap:10px; margin-bottom:28px; flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="openLogAttempt()">▶ Log Attempt</button>
+            <button class="btn btn-secondary" onclick="openEditProblem()">✏️ Edit</button>
+            <a class="btn btn-secondary" id="detailLink" href="#" target="_blank">🔗 LeetCode</a>
+            <button class="btn btn-danger" onclick="deleteOpenProblem()">🗑️ Delete</button>
+          </div>
+
+          <!-- Attempt History -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+              <span class="card-title">📝 Attempt History</span>
+            </div>
+            <div class="attempt-list" id="attemptList"></div>
+          </div>
+
+          <!-- Notes -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📓 Notes</span>
+              <button class="btn btn-sm btn-secondary" onclick="saveProblemNotes()">Save</button>
+            </div>
+            <div class="notes-editor">
+              <textarea id="detailNotes" placeholder="Write your notes here (Markdown supported)..."></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ═══════════ MODALS ═══════════ -->
+
+  <!-- Add / Edit Problem Modal -->
+  <div class="modal-overlay" id="problemModal">
+    <div class="modal">
+      <div class="modal-title">
+        <span id="problemModalTitle">Add Problem</span>
+        <button class="close-btn" onclick="closeModal('problemModal')">✕</button>
+      </div>
+      <form id="problemForm" onsubmit="saveProblem(event)">
+        <input type="hidden" id="editProblemId">
+        <div class="form-row">
+          <div class="form-group">
+            <label>LeetCode #</label>
+            <input type="number" id="probNum" placeholder="e.g. 1" min="1">
+          </div>
+          <div class="form-group">
+            <label>Difficulty *</label>
+            <select id="probDiff" required>
+              <option value="">Select...</option>
+              <option value="easy">🟢 Easy</option>
+              <option value="medium">🟡 Medium</option>
+              <option value="hard">🔴 Hard</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Problem Name *</label>
+          <input type="text" id="probName" placeholder="e.g. Two Sum" required>
+        </div>
+        <div class="form-group">
+          <label>LeetCode URL</label>
+          <input type="url" id="probUrl" placeholder="https://leetcode.com/problems/two-sum/">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="probStatus">
+            <option value="not_started">⬜ Not Started</option>
+            <option value="attempted">🔄 Attempted</option>
+            <option value="solved">✅ Solved</option>
+            <option value="revisited">🔁 Revisited</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tags (press Enter to add)</label>
+          <div class="tag-input-container" id="tagContainer">
+            <input type="text" id="tagInput" placeholder="e.g. DP, Arrays...">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="probNotes" rows="3" placeholder="Key insights, approach..."></textarea>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('problemModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Problem</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Log Attempt Modal -->
+  <div class="modal-overlay" id="attemptModal">
+    <div class="modal">
+      <div class="modal-title">
+        <span>Log Attempt</span>
+        <button class="close-btn" onclick="closeModal('attemptModal')">✕</button>
+      </div>
+      <form id="attemptForm" onsubmit="saveAttempt(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Duration (minutes)</label>
+            <input type="number" id="attDuration" min="1" placeholder="e.g. 25" required>
+          </div>
+          <div class="form-group">
+            <label>Result</label>
+            <select id="attResult" required>
+              <option value="true">✅ Solved</option>
+              <option value="false">❌ Not Solved</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Language</label>
+          <select id="attLang">
+            <option value="Python">Python</option>
+            <option value="JavaScript">JavaScript</option>
+            <option value="Java">Java</option>
+            <option value="C++">C++</option>
+            <option value="Go">Go</option>
+            <option value="TypeScript">TypeScript</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="attNotes" rows="3" placeholder="What approach did you use? What did you learn?"></textarea>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('attemptModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Log Attempt</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Reminder Modal -->
+  <div class="modal-overlay" id="reminderModal">
+    <div class="modal">
+      <div class="modal-title">
+        <span id="reminderModalTitle">New Reminder</span>
+        <button class="close-btn" onclick="closeModal('reminderModal')">✕</button>
+      </div>
+      <form id="reminderForm" onsubmit="saveReminder(event)">
+        <input type="hidden" id="editReminderId">
+        <div class="form-group">
+          <label>Type</label>
+          <select id="remType">
+            <option value="custom">📌 Custom</option>
+            <option value="daily_goal">🎯 Daily Goal</option>
+            <option value="revision">🔁 Revision</option>
+            <option value="interview">📅 Interview</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Title *</label>
+          <input type="text" id="remTitle" required placeholder="e.g. Research topological sort">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="remDesc" rows="2" placeholder="Additional details..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date & Time</label>
+            <input type="datetime-local" id="remDate" required>
+          </div>
+          <div class="form-group">
+            <label>Repeat</label>
+            <select id="remRepeat">
+              <option value="">One-time</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('reminderModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Reminder</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Note Modal -->
+  <div class="modal-overlay" id="noteModal">
+    <div class="modal">
+      <div class="modal-title">
+        <span id="noteModalTitle">New Note</span>
+        <button class="close-btn" onclick="closeModal('noteModal')">✕</button>
+      </div>
+      <form id="noteForm" onsubmit="saveNote(event)">
+        <input type="hidden" id="editNoteId">
+        <div class="form-group">
+          <label>Title *</label>
+          <input type="text" id="noteTitle" required placeholder="e.g. Binary Search Template">
+        </div>
+        <div class="form-group">
+          <label>Content (Markdown)</label>
+          <textarea id="noteContent" rows="10" placeholder="# My Note&#10;&#10;Write your notes here..."
+            style="font-family:var(--font-mono)"></textarea>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="noteCheatSheet"> Mark as Cheat Sheet
+          </label>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('noteModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Note</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="sheets.js"></script>
+  <script src="app.js"></script>
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => { });</script>
+</body>
+
+</html>
