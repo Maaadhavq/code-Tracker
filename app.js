@@ -1254,28 +1254,30 @@ async function syncLeetCode(isQuick = false) {
   try {
     let data = null;
 
-    // Method 1: Public LeetCode stats API (no CORS issues) - Note: doesn't have recentAcSubmissionList by default in standard endpoint
+    // Method 1: Our Vercel API proxy (Fetches detailed GraphQL including recentAcSubmissionList)
     try {
-      const r1 = await fetch(`https://alfa-leetcode-api.onrender.com/userProfile/${username}`);
+      const r1 = await fetch('/api/leetcode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      });
       if (r1.ok) {
         const j = await r1.json();
-        if (j && (j.totalSolved !== undefined || j.matchedUser)) data = j;
+        if (j.data) data = j; // Extract the GraphQL data root
       }
-    } catch (e) { console.log('Method 1 failed:', e); }
+    } catch (e) {
+      console.log('Method 1 (Vercel API proxy) failed:', e);
+    }
 
-    // Method 2: Our Vercel API proxy
-    if (!data || !data.data?.recentAcSubmissionList) {
+    // Method 2: Fallback to Public LeetCode stats API (NOTE: does NOT include recent submissions)
+    if (!data) {
       try {
-        const r2 = await fetch('/api/leetcode', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username })
-        });
+        const r2 = await fetch(`https://alfa-leetcode-api.onrender.com/userProfile/${username}`);
         if (r2.ok) {
           const j = await r2.json();
-          if (j.data) data = j; // Prefer GraphQL response for recent ACs
+          if (j && (j.totalSolved !== undefined || j.matchedUser)) data = j;
         }
-      } catch (e) { console.log('Method 2 failed:', e); }
+      } catch (e) { console.log('Method 2 (alfa api) failed:', e); }
     }
 
     if (!data) throw new Error('All sync methods failed');
