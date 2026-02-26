@@ -1238,28 +1238,48 @@ async function syncLeetCode() {
   }`;
 
   try {
-    const resp = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://leetcode.com/graphql'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query })
-    });
+    // Try our own API proxy first (Vercel serverless), then fallback to public API
+    let resp;
+    try {
+      resp = await fetch('/api/leetcode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      });
+    } catch (e) {
+      // Fallback: try alfa-leetcode-api (public, no CORS issues)
+      resp = await fetch(`https://alfa-leetcode-api.onrender.com/${username}`);
+    }
+
 
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
-    const user = data?.data?.matchedUser;
-    if (!user) { statusEl.textContent = '❌ User not found'; return; }
 
-    const stats = {};
-    (user.submitStatsGlobal?.acSubmissionNum || []).forEach(s => {
-      stats[s.difficulty.toLowerCase()] = s.count;
-    });
+    // Handle both response formats
+    let stats = {};
+    let displayName = username;
+
+    if (data?.data?.matchedUser) {
+      // GraphQL format (our API proxy)
+      const user = data.data.matchedUser;
+      displayName = user.username;
+      (user.submitStatsGlobal?.acSubmissionNum || []).forEach(s => {
+        stats[s.difficulty.toLowerCase()] = s.count;
+      });
+    } else if (data?.totalSolved !== undefined) {
+      // alfa-leetcode-api format
+      stats = { all: data.totalSolved, easy: data.easySolved, medium: data.mediumSolved, hard: data.hardSolved };
+    } else {
+      statusEl.textContent = '❌ User not found';
+      return;
+    }
 
     APP.settings.lcUsername = username;
     APP.settings.lcStats = stats;
     APP.settings.lcSyncedAt = new Date().toISOString();
     saveData(APP);
 
-    statusEl.textContent = `✅ Synced as ${user.username}`;
+    statusEl.textContent = `✅ Synced as ${displayName}`;
     resultEl.innerHTML = `
       <div class="lc-stats">
         <div class="lc-stat-item"><div class="lc-val" style="color:var(--green)">${stats.easy || 0}</div><div class="lc-label">Easy</div></div>
@@ -1268,15 +1288,7 @@ async function syncLeetCode() {
       </div>
       <p style="font-size:0.72rem; color:var(--text-tertiary); margin-top:8px">Total: ${(stats.all || 0)} solved  •  Last synced: ${new Date().toLocaleString()}</p>`;
 
-    // Auto-match sheet problems as solved
-    let matched = 0;
-    APP.problems.forEach(p => {
-      if (p.status === 'not_started' || p.status === 'attempted') {
-        // We can't get per-problem data from public API, so we just update the sync stats display
-      }
-    });
-
-    showToast(`🔗 Synced with ${user.username}'s LeetCode profile`);
+    showToast(`🔗 Synced with ${displayName}'s LeetCode profile`);
   } catch (err) {
     statusEl.textContent = '❌ Sync failed — try again later';
     console.error('LeetCode sync error:', err);
