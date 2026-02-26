@@ -1,0 +1,61 @@
+40: const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+555: list.innerHTML = `<div class="empty-state"><div class="empty-icon">🎯</div><h3>Add problems to get suggestions</h3><p>We'll recommend problems based on your weak topics.</p></div>`;
+557: list.innerHTML = `<div class="empty-state"><div class="empty-icon">🎉</div><h3>All problems solved!</h3><p>Add more problems to keep going.</p></div>`;
+610: list.innerHTML = `<div class="empty-state"><div class="empty-icon">📚</div><h3>No problems found</h3><p>${APP.problems.length === 0 ? 'Start by adding your first problem.' : 'Try adjusting your filters.'}</p>${APP.problems.length === 0 ? '<button class="btn btn-primary" onclick="openAddProblem()">+ Add Problem</button>' : ''}</div>`;
+652: const statusLabel = { not_started: '⬜ Not Started', attempted: '🔄 Attempted', solved: '✅ Solved', revisited: '🔁 Revisited' }[p.status] || p.status;
+661: const stars = [1, 2, 3, 4, 5].map(i => `<span class="star" onclick="setConfidence(${i})">${i <= (p.confidence || 0) ? '⭐' : '☆'}</span>`).join('');
+679: <span class="att-result" style="color:${a.solved ? 'var(--green)' : 'var(--red)'}">${a.solved ? '✅' : '❌'}</span>
+969: list.innerHTML = `<div class="empty-state"><div class="empty-icon">🔔</div><h3>No reminders yet</h3><p>Set daily goals, revision alerts, or custom reminders.</p><button class="btn btn-primary" onclick="openAddReminder()">+ New Reminder</button></div>`;
+973: const icons = { daily_goal: '🎯', revision: '🔁', interview: '📅', custom: '📌' };
+978: <div class="reminder-icon ${r.type}">${icons[r.type] || '📌'}</div>
+985: <button class="btn btn-icon btn-secondary" onclick="deleteReminder('${r.id}')" title="Delete">🗑️</button>
+1000: grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📝</div><h3>${APP.notes.length === 0 ? 'No notes yet' : 'No matching notes'}</h3><p>Create cheat sheets, learnings, and templates.</p>${APP.notes.length === 0 ? '<button class="btn btn-primary" onclick="openAddNote()">+ New Note</button>' : ''}</div>`;
+1006: <div class="note-title">${n.isCheatSheet ? '📄 ' : ''}${n.title}</div>
+1010: <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteNote('${n.id}')">🗑️</button>
+1036: <span>${imported ? '✅ Imported' : `${sheet.problems.length} problems`}</span>
+1054: <div class="prep-icon">🤖</div>
+1096: btn.textContent = imported ? '✅ Already Imported' : '📥 Import All';
+1110: const statusLabel = { not_started: '⬜', attempted: '🔄', solved: '✅', revisited: '🔁' }[status] || '⬜';
+1154: showToast(`📋 ${SHEETS[currentSheetKey].name}: ${added} problems imported (${problems.length - added} already existed)`);
+1166: container.innerHTML = '<div class="card"><div class="card-header"><span class="card-title">📋 Active Sheets</span></div>' +
+1220: showToast('🤖 AI Roadmap generation — Coming soon with backend integration!', 'info');
+1323: if (statusEl) statusEl.textContent = '❌ User not found';
+1324: if (isQuick && dashBtn) { dashBtn.textContent = '❌ Failed'; dashBtn.disabled = false; }
+1367: if (statusEl) statusEl.textContent = `✅ Synced as ${displayName}`;
+1377: dashBtn.textContent = '🔄 Quick Sync';
+1381: let msg = `🔗 Synced with ${displayName}'s LeetCode profile.`;
+1390: if (statusEl) statusEl.textContent = '❌ Sync failed: ' + (err.message || 'Unknown error');
+1391: if (isQuick && dashBtn) { dashBtn.textContent = '🔄 Quick Sync'; dashBtn.disabled = false; }
+1405: reg.showNotification(title, { body: body, icon: '🎯', badge: '🎯' });
+1450: if (btn) { btn.textContent = '✅ Enabled'; btn.disabled = true; }
+1453: showToast('🔔 Notifications enabled!');
+1454: showNotif('CodeTrack', "✅ Notifications are working! You'll get daily reminders.");
+1469: if (debug) debug.innerHTML += '<br>❌ Notification API not available in this browser';
+1475: if (debug) debug.innerHTML += '<br>❌ Permission not granted — click Enable first';
+1483: reg.showNotification('CodeTrack — Test ✅', {
+1487: if (debug) debug.innerHTML += '<br>✅ SW notification sent at ' + new Date().toLocaleTimeString();
+1488: showToast('✅ Test notification sent via service worker!');
+1490: if (debug) debug.innerHTML += '<br>❌ SW error: ' + err.message;
+1494: if (debug) debug.innerHTML += '<br>✅ Fallback notification sent';
+1496: if (debug) debug.innerHTML += '<br>❌ Fallback error: ' + e2.message;
+1500: if (debug) debug.innerHTML += '<br>❌ SW not ready: ' + err.message;
+1506: if (debug) debug.innerHTML += '<br>✅ Direct notification sent';
+1508: if (debug) debug.innerHTML += '<br>❌ Direct error: ' + e.message;
+1520: lines.push('🕐 Device Time: ' + now.toLocaleString());
+1521: lines.push('🌐 Protocol: ' + location.protocol);
+1522: lines.push('📍 Origin: ' + location.origin);
+1526: lines.push('🔔 Permission: ' + Notification.permission);
+1528: lines.push('❌ Notification API: NOT AVAILABLE');
+1533: lines.push('⚙️ SW Support: Yes');
+1535: lines.push('✅ SW Active: ' + navigator.serviceWorker.controller.scriptURL.split('/').pop());
+1537: lines.push('⚠️ SW Controller: None (refresh page)');
+1540: lines.push('❌ SW Support: No');
+1544: lines.push('💾 Saved enabled: ' + (APP.settings.notificationsEnabled ? 'Yes' : 'No'));
+1548: lines.push('⚠️ file:// — notifications need http:// or https://');
+1550: lines.push('⚠️ HTTP non-localhost — mobile Chrome blocks notifications here');
+1552: lines.push('✅ Protocol OK for notifications');
+1557: lines.push('📅 Next reminders:');
+1579: showNotif('CodeTrack — Daily Goal', `You've solved ${todayCount}/${goal} today. Keep going! 💪`);
+1600: showNotif('CodeTrack — Time to Revise', `${needsRevision.length} problems need revision. 🧠`);
+1657: ? `✅ Last synced: ${new Date(APP.settings.lcSyncedAt).toLocaleDateString()}`
+1663: if (notifBtn) { notifBtn.textContent = '✅ Enabled'; notifBtn.disabled = true; }

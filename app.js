@@ -37,7 +37,7 @@ function uuid() {
 // ─── Toast ───
 function showToast(msg, type = 'success') {
   const c = document.getElementById('toastContainer');
-  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+  const icon = type === 'success' ? '<svg style="width:16px;height:16px;display:inline-block;vertical-align:-3px;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="var(--green)"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>' : type === 'error' ? '<svg style="width:16px;height:16px;display:inline-block;vertical-align:-3px;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="var(--red)"><path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>' : '<svg style="width:16px;height:16px;display:inline-block;vertical-align:-3px;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>';
   const t = document.createElement('div');
   t.className = `toast ${type}`;
   t.innerHTML = `<span>${icon}</span> ${msg}`;
@@ -607,7 +607,7 @@ function renderProblemList() {
   );
 
   if (filtered.length === 0) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📚</div><h3>No problems found</h3><p>${APP.problems.length === 0 ? 'Start by adding your first problem.' : 'Try adjusting your filters.'}</p>${APP.problems.length === 0 ? '<button class="btn btn-primary" onclick="openAddProblem()">+ Add Problem</button>' : ''}</div>`;
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg style="width:48px;height:48px" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg></div><h3>No problems found</h3><p>${APP.problems.length === 0 ? 'Start by adding your first problem.' : 'Try adjusting your filters.'}</p>${APP.problems.length === 0 ? '<button class="btn btn-primary" onclick="openAddProblem()">+ Add Problem</button>' : ''}</div>`;
     return;
   }
 
@@ -676,7 +676,7 @@ function renderProblemDetail() {
         <span class="att-num">#${attempts.length - i}</span>
         <span class="att-date">${new Date(a.date).toLocaleDateString()}</span>
         <span class="att-time">${a.duration}min</span>
-        <span class="att-result" style="color:${a.solved ? 'var(--green)' : 'var(--red)'}">${a.solved ? '✅' : '❌'}</span>
+        <span class="att-result" style="color:${a.solved ? 'var(--green)' : 'var(--red)'}">${a.solved ? '<svg style="width:16px;height:16px;display:inline-block;vertical-align:-3px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>' : '<svg style="width:16px;height:16px;display:inline-block;vertical-align:-3px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>'}</span>
         <span style="color:var(--text-tertiary)">${a.language || ''}</span>
       </div>
     `).join('');
@@ -1342,7 +1342,12 @@ async function syncLeetCode(isQuick = false) {
         localProb.status = 'solved';
         if (!localProb.attempts) localProb.attempts = [];
 
-        // Add a dummy attempt if none exists for today
+        // Determine if the LeetCode submission was actually from today
+        const isFromToday = ac.timestamp ?
+          new Date(parseInt(ac.timestamp) * 1000).toISOString().slice(0, 10) === today :
+          true; // If timestamp is missing, assume it might be new just in case, or default to true for graphql API fallback
+
+        // Add a dummy attempt if none exists
         if (!localProb.attempts.some(a => a.date.startsWith(today))) {
           localProb.attempts.push({
             id: uuid(),
@@ -1352,8 +1357,11 @@ async function syncLeetCode(isQuick = false) {
             language: 'Auto-Synced',
             notes: 'Auto-synced from LeetCode'
           });
-          // Update activity log for streak
-          APP.activityLog[today] = (APP.activityLog[today] || 0) + 1;
+
+          // Only update activity log for goal/streak if the submission was ACTUALLY today
+          if (isFromToday) {
+            APP.activityLog[today] = (APP.activityLog[today] || 0) + 1;
+          }
         }
 
         localProb.updatedAt = new Date().toISOString();
