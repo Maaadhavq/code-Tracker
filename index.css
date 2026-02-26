@@ -223,7 +223,15 @@ a:hover {
 .nav-item .nav-icon {
   font-size: 1.15rem;
   width: 24px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-item .nav-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
 }
 
 .nav-section-label {
